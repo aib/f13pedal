@@ -17,7 +17,7 @@ enum string_ids_t {
 
 const USB_Descriptor_String_t PROGMEM str_language = USB_STRING_DESCRIPTOR_ARRAY(LANGUAGE_ID_ENG);
 const USB_Descriptor_String_t PROGMEM str_manufacturer = USB_STRING_DESCRIPTOR(L"aib");
-const USB_Descriptor_String_t PROGMEM str_product = USB_STRING_DESCRIPTOR(L"LUFA Keyboard");
+const USB_Descriptor_String_t PROGMEM str_product = USB_STRING_DESCRIPTOR(L"F13 Pedal Keyboard");
 
 const USB_Descriptor_HIDReport_Datatype_t PROGMEM desc_hid_report[] = {
 	HID_DESCRIPTOR_KEYBOARD(6)
