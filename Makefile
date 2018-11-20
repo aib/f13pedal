@@ -1,12 +1,12 @@
 CC = avr-gcc
 CP = cp
 AVRDUDE = avrdude
-AVRDUDE_OPTS =
+AVRDUDE_OPTS = -B 1
 LUFA_DIR = ./LUFA
 
 ARCH = ARCH_AVR8
 DEVICE = atmega32u4
-PROGRAMMER = usbasp
+PROGRAMMER = usbtiny
 PROGRAMMER_PORT = usb
 F_CPU = 16000000
 FUSE_H = 0b10011001
@@ -14,12 +14,15 @@ FUSE_L = 0b01011110
 
 CFLAGS = -std=c99 -Wall -O2 -mmcu=$(DEVICE) -DF_CPU=$(F_CPU)UL -DF_USB=$(F_CPU)UL -DUSE_LUFA_CONFIG_HEADER -I.
 
+.PHONY: all
+all: pedal program
+
 .PHONY: avrdude-test
 avrdude-test:
 	$(AVRDUDE) $(AVRDUDE_OPTS) -p $(DEVICE) -c $(PROGRAMMER) -P $(PROGRAMMER_PORT) -v
 
 .PHONY: program
-program: main.hex
+program: pedal.hex
 	$(AVRDUDE) $(AVRDUDE_OPTS) -p $(DEVICE) -c $(PROGRAMMER) -P $(PROGRAMMER_PORT) -U flash:w:$<:i
 
 .PHONY: program-fuses
@@ -36,14 +39,9 @@ clean:
 %.hex: %.elf
 	avr-objcopy -j .text -j .data -O ihex $^ $@
 
-.PHONY: blink
-blink: blink.hex
-	$(CP) blink.hex main.hex
-	avr-size main.hex
-
-.PHONY: lufakey
-lufakey: lufakey.hex
-	$(CP) lufakey.hex main.hex
+.PHONY: pedal
+lufakey: pedal.hex
+	$(CP) pedal.hex main.hex
 	avr-size main.hex
 
 HIDClassDevice.o: $(LUFA_DIR)/Drivers/USB/Class/Device/HIDClassDevice.c
@@ -63,5 +61,5 @@ DeviceStandardReq.o: $(LUFA_DIR)/Drivers/USB/Core/DeviceStandardReq.c
 Events.o: $(LUFA_DIR)/Drivers/USB/Core/Events.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $(@F) $^
 
-lufakey.elf: lufakey.o descriptor.o HIDClassDevice.o USBController_AVR8.o USBTask.o Endpoint_AVR8.o EndpointStream_AVR8.o USBInterrupt_AVR8.o DeviceStandardReq.o Events.o
+pedal.elf: pedal.o descriptor.o HIDClassDevice.o USBController_AVR8.o USBTask.o Endpoint_AVR8.o EndpointStream_AVR8.o USBInterrupt_AVR8.o DeviceStandardReq.o Events.o
 	$(CC) -s $(CFLAGS) -o $@ $^
