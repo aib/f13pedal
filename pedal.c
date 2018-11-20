@@ -4,9 +4,6 @@
 
 static uint8_t report_buffer_prev[sizeof(USB_KeyboardReport_Data_t)];
 
-bool button_pressed = false;
-bool button_last_up = true;
-
 USB_ClassInfo_HID_Device_t hid_info = {
 	.Config = {
 		.InterfaceNumber = 0,
@@ -20,15 +17,17 @@ USB_ClassInfo_HID_Device_t hid_info = {
 	},
 };
 
+static bool pedal_down = false;
+
 void button_tasks(void)
 {
-	bool button_up = PINC & 64;
+	pedal_down = !(PINC & 64);
 
-	if (button_last_up && !button_up) {
-		button_pressed = true;
+	if (pedal_down) {
+		PORTB &= ~1;
+	} else {
+		PORTB |= 1;
 	}
-
-	button_last_up = button_up;
 }
 
 int main(void)
@@ -82,9 +81,8 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 {
 	USB_KeyboardReport_Data_t *report = (USB_KeyboardReport_Data_t*) ReportData;
 
-	if (button_pressed) {
-		report->KeyCode[0] = HID_KEYBOARD_SC_CAPS_LOCK;
-		button_pressed = false;
+	if (pedal_down) {
+		report->KeyCode[0] = HID_KEYBOARD_SC_F13;
 	}
 
 	*ReportSize = sizeof(USB_KeyboardReport_Data_t);
@@ -93,11 +91,4 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 
 void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDInterfaceInfo, const uint8_t ReportID, const uint8_t ReportType, const void* ReportData, const uint16_t ReportSize)
 {
-	uint8_t leds = *(uint8_t*) ReportData;
-
-	if (leds & HID_KEYBOARD_LED_CAPSLOCK) {
-		PORTB &= ~1;
-	} else {
-		PORTB |= 1;
-	}
 }
