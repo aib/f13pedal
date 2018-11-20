@@ -1,0 +1,4 @@
+/LUFA
+*.elf
+*.hex
+*.o
